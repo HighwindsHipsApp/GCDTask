@@ -18,17 +18,23 @@
 
 @interface GCDTask ()
 
-@property (strong) NSPipe *stdoutPipe;
-@property (strong) NSPipe *stdinPipe;
-@property (strong) NSPipe *stderrPipe;
-
-@property (strong) NSTask *executingTask;
+// Configuration Properties
 
 @property (strong) NSString* launchPath;
 @property (strong) NSArray* arguments;
 
+// The Task being executed
+@property (strong) NSTask *executingTask;
+
+// IO Pipes
+@property (strong) NSPipe *stdoutPipe;
+@property (strong) NSPipe *stdinPipe;
+@property (strong) NSPipe *stderrPipe;
+
+// Has the task executed?
 @property BOOL hasExecuted;
 
+// Two dispatch sources to receive information from stdout and stderr
 @property __block dispatch_source_t stdoutSource;
 @property __block dispatch_source_t stderrSource;
 
@@ -36,6 +42,12 @@
 
 @implementation GCDTask
 
+/**
+ * Initialize the GCDTask with the specified launch path and arguments.
+ *
+ * @param NSString *launchPath The task to launch
+ * @param NSArray  *arguments  The arguments to launch the task.
+ */
 - (id)initWithLaunchPath:(NSString *)launchPath andArguments:(NSArray *)arguments {
     self = [super init];
 
@@ -47,10 +59,10 @@
     return self;
 }
 
-- (void)launchWithOutputBlock:(void (^)(NSData *))outputHandler
-                andErrorBlock:(void (^)(NSData *))errorHandler
-                     onLaunch:(void (^)())launchHandler
-                       onExit:(void (^)())exitHandler {
+/**
+ * Launch the task
+ */
+- (void)launch {
 
     // Setup a local variable
     NSTask *executingTask = [[NSTask alloc] init];
@@ -126,13 +138,13 @@
             NSData* dataToPass = [NSData dataWithBytes:buffer length:bytesRead];
             dispatch_async(dispatch_get_main_queue(), ^{
                 if(!_hasExecuted) {
-                    if(launchHandler) {
-                        launchHandler();
+                    if(self.launchHandler) {
+                        self.launchHandler();
                     }
                     _hasExecuted = TRUE;
                 }
-                if(outputHandler) {
-                    outputHandler(dataToPass);
+                if(self.outputHandler) {
+                    self.outputHandler(dataToPass);
                 }
             });
         }
@@ -140,8 +152,8 @@
         if(errno != 0 && bytesRead <= 0) {
             dispatch_source_cancel(self.stdoutSource);
             dispatch_async(dispatch_get_main_queue(), ^{
-                if(exitHandler) {
-                    exitHandler();
+                if(self.exitHandler) {
+                    self.exitHandler();
                 }
             });
         }
@@ -163,8 +175,8 @@
         if(bytesRead > 0) {
             NSData* dataToPass = [NSData dataWithBytes:buffer length:bytesRead];
             dispatch_async(dispatch_get_main_queue(), ^{
-                if(errorHandler) {
-                    errorHandler(dataToPass);
+                if(self.errorHandler) {
+                    self.errorHandler(dataToPass);
                 }
             });
         }
@@ -184,8 +196,8 @@
         dispatch_source_cancel(self.stdoutSource);
         dispatch_source_cancel(self.stderrSource);
 
-        if(exitHandler) {
-            exitHandler();
+        if(self.exitHandler) {
+            self.exitHandler();
         }
     };
 
@@ -199,14 +211,19 @@
 }
 
 /**
- * Converts the input to an NSData and calls writeDataToStandardInput.
+ * Writes the input string to the stdin. Converts the string to data using UTF8 encoding.
+ *
+ * @param NSString *input The string to send to stdin
  */
 -(BOOL)writeStringToStandardInput:(NSString *)input {
     return [self writeDataToStandardInput:[input dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
-/* Currently synchronous. TODO: Async fun! */
-
+/**
+ * Writes the data to the stdin. Currently synchronous. TODO: Async fun!
+ *
+ * @param NSData *input The data to send to stdin
+ */
 -(BOOL)writeDataToStandardInput:(NSData *)input {
     if (!self.stdinPipe || self.stdinPipe == nil) {
         GCDDebug(@"Standard input pipe does not exist.");
