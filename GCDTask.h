@@ -7,39 +7,48 @@
 
 #import <Foundation/Foundation.h>
 
-#ifdef GCDTASK_DEBUG
-#define GCDDebug(str, ...) NSLog(str, ##__VA_ARGS__)
-#else
-#define GCDDebug(str, ...)
-#endif
-
-
 @interface GCDTask : NSObject
-{
-    NSPipe* stdoutPipe;
-    NSPipe* stderrPipe;
-    NSPipe* stdinPipe;
-    NSTask* executingTask;
-    id stdoutObserver;
-    id stderrObserver;
-}
 
-@property (strong) NSString* launchPath;
-@property (strong) NSArray* arguments;
-@property BOOL hasExecuted;
-@property __block dispatch_source_t stdoutSource;
-@property __block dispatch_source_t stderrSource;
+@property (nonatomic, copy) void (^outputHandler)(NSData *);
+@property (nonatomic, copy) void (^errorHandler)(NSData *);
+@property (nonatomic, copy) void (^launchHandler)();
+@property (nonatomic, copy) void (^exitHandler)();
 
+/**
+ * Initialize the GCDTask with the specified launch path and arguments.
+ *
+ * @param NSString *launchPath The task to launch
+ * @param NSArray  *arguments  The arguments to launch the task.
+ */
+- (id)initWithLaunchPath:(NSString *)launchPath andArguments:(NSArray *)arguments;
 
+/**
+ * Launch the task
+ */
+- (void)launch;
 
-- (void) launchWithOutputBlock: (void (^)(NSData* stdOutData)) stdOut
-                andErrorBlock: (void (^)(NSData* stdErrData)) stdErr
-                     onLaunch: (void (^)()) launched
-                       onExit: (void (^)()) exit;
+/**
+ * Writes the input string to the stdin. Converts the string to data using UTF8 encoding.
+ *
+ * @param NSString *input The string to send to stdin
+ */
+- (BOOL)writeStringToStandardInput:(NSString *)input;
 
-- (BOOL) WriteStringToStandardInput: (NSString*) input;
-- (BOOL) WriteDataToStandardInput: (NSData*) input;
-- (void) AddArgument: (NSString*) argument;
-- (void) RequestTermination;
+/**
+ * Writes the data to the stdin
+ *
+ * @param NSData *input The data to send to stdin
+ */
+- (BOOL)writeDataToStandardInput:(NSData *)input;
+
+/**
+ * Terminates the GCDTask. First it will request SIGINT, then it will force SIGTERM after 10 seconds.
+ */
+- (void)requestTermination;
+
+/**
+ * Calls waitUntilExit on the currently executing internal NSTask.
+ */
+- (void)waitUntilExit;
 
 @end
