@@ -10,8 +10,8 @@
 @interface GCDTask : NSObject
 
 // Configuration Properties
-@property (strong, readonly) NSString* launchPath;
-@property (strong, readonly) NSArray* arguments;
+@property (strong, readonly) NSString *launchPath;
+@property (strong, readonly) NSArray  *arguments;
 
 // Action Handlers
 @property (nonatomic, copy) void (^outputHandler)(NSData *);
