@@ -78,7 +78,7 @@
                 [cleanedArray addObject:[NSString stringWithFormat:@"%@",arg]];
             }
 
-            [self setArguments:cleanedArray];
+			_arguments = cleanedArray;
             break;
         }
     }
