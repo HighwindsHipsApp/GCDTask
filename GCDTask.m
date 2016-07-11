@@ -18,11 +18,6 @@
 
 @interface GCDTask ()
 
-// Configuration Properties
-
-@property (strong) NSString* launchPath;
-@property (strong) NSArray* arguments;
-
 // The Task being executed
 @property (strong) NSTask *executingTask;
 

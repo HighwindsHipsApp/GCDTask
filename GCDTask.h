@@ -9,6 +9,11 @@
 
 @interface GCDTask : NSObject
 
+// Configuration Properties
+@property (strong, readonly) NSString* launchPath;
+@property (strong, readonly) NSArray* arguments;
+
+// Action Handlers
 @property (nonatomic, copy) void (^outputHandler)(NSData *);
 @property (nonatomic, copy) void (^errorHandler)(NSData *);
 @property (nonatomic, copy) void (^launchHandler)();
