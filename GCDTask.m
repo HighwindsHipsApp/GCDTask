@@ -63,7 +63,7 @@
     NSTask *executingTask = [[NSTask alloc] init];
  
     /* Set launch path. */
-    [executingTask setLaunchPath:[_launchPath stringByStandardizingPath]];
+    [executingTask setLaunchPath:[self.launchPath stringByStandardizingPath]];
     
     if (![[NSFileManager defaultManager] isExecutableFileAtPath:[executingTask launchPath]]) {
         @throw [NSException exceptionWithName:@"GCDTASK_INVALID_EXECUTABLE" reason:@"There is no executable at the path set." userInfo:nil];
@@ -94,9 +94,8 @@
     [executingTask setStandardOutput:stdoutPipe];
     [executingTask setStandardError:stderrPipe];
     
-    /* Set current directory, just pass on our actual CWD. */
-    /* TODO: Potentially make this changeable? Surely there's probably a nicer way to get the CWD too. */
-    [executingTask setCurrentDirectoryPath:[[[NSFileManager alloc] init] currentDirectoryPath]];
+    /* Set current directory from the launch path of the executable. */
+    [executingTask setCurrentDirectoryPath:[self.launchPath stringByDeletingLastPathComponent]];
 
 
     /* Ensure the pipes are non-blocking so GCD can read them correctly. */
