@@ -40,8 +40,8 @@
 /**
  * Initialize the GCDTask with the specified launch path and arguments.
  *
- * @param NSString *launchPath The task to launch
- * @param NSArray  *arguments  The arguments to launch the task.
+ * @param launchPath The task to launch
+ * @param arguments  The arguments to launch the task.
  */
 - (id)initWithLaunchPath:(NSString *)launchPath andArguments:(NSArray *)arguments {
     self = [super init];
@@ -207,7 +207,7 @@
 /**
  * Writes the input string to the stdin. Converts the string to data using UTF8 encoding.
  *
- * @param NSString *input The string to send to stdin
+ * @param input The string to send to stdin
  */
 -(BOOL)writeStringToStandardInput:(NSString *)input {
     return [self writeDataToStandardInput:[input dataUsingEncoding:NSUTF8StringEncoding]];
@@ -216,7 +216,7 @@
 /**
  * Writes the data to the stdin. Currently synchronous. TODO: Async fun!
  *
- * @param NSData *input The data to send to stdin
+ * @param input The data to send to stdin
  */
 -(BOOL)writeDataToStandardInput:(NSData *)input {
     if (!self.stdinPipe || self.stdinPipe == nil) {
